@@ -260,7 +260,43 @@ func TestConfigLoad(t *testing.T) {
 			},
 			expectError: false,
 		},
-	}
+		}
+
+		// macOS fallback test: separate from the main loop because it
+		// unsets XDG_CONFIG_HOME so os.UserConfigDir() returns the macOS path.
+		t.Run("macOS fallback to XDG", func(t *testing.T) {
+			origXDG := os.Getenv("XDG_CONFIG_HOME")
+			origHOME := os.Getenv("HOME")
+			defer func() {
+				os.Setenv("XDG_CONFIG_HOME", origXDG)
+				os.Setenv("HOME", origHOME)
+			}()
+
+			// On macOS, UserConfigDir() == $HOME/Library/Application Support.
+			// With no XDG_CONFIG_HOME set and HOME=tempDir:
+			//   default path  -> tempDir/Library/Application Support/lsq/config.edn
+			//   fallback path -> tempDir/.config/lsq/config.edn
+			os.Unsetenv("XDG_CONFIG_HOME")
+			os.Setenv("HOME", tempDir)
+
+			// Write config to the fallback path only.
+			fallbackCfgRelPath := filepath.Join(".config", "lsq", "config.edn")
+			fallbackFull := filepath.Join(tempDir, fallbackCfgRelPath)
+			if err := os.MkdirAll(filepath.Dir(fallbackFull), 0755); err != nil {
+				t.Fatalf("Failed to create directory: %v", err)
+			}
+			if err := os.WriteFile(fallbackFull, []byte(`{:directory "/fallback/path"}`), 0644); err != nil {
+				t.Fatalf("Failed to write fallback config: %v", err)
+			}
+
+			cfg, err := config.Load()
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if cfg.DirPath != "/fallback/path" {
+				t.Errorf("Expected DirPath=/fallback/path, got %s", cfg.DirPath)
+			}
+		})
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -280,6 +316,9 @@ func TestConfigLoad(t *testing.T) {
 			// Clean up any config files from prior subtests.
 			lsqCfgDir := filepath.Join(resolvedConfigDir, "lsq")
 			os.RemoveAll(lsqCfgDir)
+
+			// Also clean up the Linux-style XDG fallback path used on macOS.
+			os.RemoveAll(filepath.Join(tempDir, ".config"))
 
 			// Create test files relative to the resolved config directory.
 			for relPath, content := range tc.setupFiles {

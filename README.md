@@ -153,7 +153,7 @@ Available on all commands:
 ### Configuration File
 This file must be stored in your config directory as `lsq/config.edn`.
 On Unix systems, it returns `$XDG_CONFIG_HOME` if non-empty, else `$HOME/.config` will be used.
-On macOS, it returns `$HOME/Library/Application Support`.
+On macOS, it first looks in `$HOME/Library/Application Support/lsq/config.edn`. If not found, it falls back to `$HOME/.config/lsq/config.edn`.
 On Windows, it returns `%AppData%`.
 On Plan 9, it returns `$home/lib`.
 

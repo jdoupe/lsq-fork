@@ -35,7 +35,15 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	cfgPath := filepath.Join(configDir, "lsq", "config.edn")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+
+	// On macOS, also check the Linux-style XDG path as a fallback.
+	macOSFallbackPath := filepath.Join(homeDir, ".config", "lsq", "config.edn")
+	defaultCfgPath := filepath.Join(configDir, "lsq", "config.edn")
+	cfgPath := defaultCfgPath
 
 	data, dErr := os.ReadFile(cfgPath)
 	if dErr != nil && !os.IsNotExist(dErr) {
@@ -44,13 +52,15 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("error reading config file: %v\n", dErr)
 	}
 
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	if os.IsNotExist(dErr) {
+		// On macOS, try the Linux-style XDG path as a fallback.
+		if data, dErr = os.ReadFile(macOSFallbackPath); dErr == nil {
+			cfgPath = macOSFallbackPath
+		}
 	}
 
 	if os.IsNotExist(dErr) {
-		// Set a defaults in case the user did not provide an override
+		// Set defaults in case the user did not provide an override
 		c.FileType = "Markdown"
 		c.FileFmt = "yyyy_MM_dd"
 
