@@ -50,9 +50,9 @@ var agoCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.Flags().IntVarP(&indentFlag, "indent", "i", 0, "Logseq nesting level for appended text (2=child, 3=grandchild, etc.)")
+	rootCmd.Flags().IntVarP(&indentFlag, "indent", "i", 0, "Logseq nesting level for appended text (1=child, 2=grandchild, etc.)")
 	for _, cmd := range []*cobra.Command{todayCmd, yesterdayCmd, agoCmd} {
-		cmd.Flags().IntVarP(&indentFlag, "indent", "i", 0, "Logseq nesting level for appended text (2=child, 3=grandchild, etc.)")
+		cmd.Flags().IntVarP(&indentFlag, "indent", "i", 0, "Logseq nesting level for appended text (1=child, 2=grandchild, etc.)")
 	}
 }
 
@@ -102,10 +102,10 @@ func stdinPiped() bool {
 }
 
 // indentTabs converts the 1-indexed nesting level in indentFlag to a tab count.
-// Level 0 (default) means no indent; level 2 = 1 tab, level 3 = 2 tabs, etc.
+// Level 0 (default) means no indent; level 1 = 1 tab, level 2 = 2 tabs, etc.
 func indentTabs() int {
-	if indentFlag <= 1 {
+	if indentFlag <= 0 {
 		return 0
 	}
-	return indentFlag - 1
+	return indentFlag
 }
