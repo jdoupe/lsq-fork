@@ -24,7 +24,7 @@ var pageCmd = &cobra.Command{
 }
 
 func init() {
-	pageCmd.Flags().IntVarP(&indentFlag, "indent", "i", 0, "Logseq nesting level for appended text (2=child, 3=grandchild, etc.)")
+	pageCmd.Flags().IntVarP(&indentFlag, "indent", "i", 0, "Logseq nesting level for appended text (1=child, 2=grandchild, etc.)")
 }
 
 func runPage(name string, args []string) error {

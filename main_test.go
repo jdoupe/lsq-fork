@@ -294,7 +294,7 @@ func TestCLIAgoInvalidN(t *testing.T) {
 
 func TestCLITodayIndent(t *testing.T) {
 	e := newCLIEnv(t)
-	_, stderr, err := e.run("t", "--dir", e.logseqDir, "--indent=2", "indented entry")
+	_, stderr, err := e.run("t", "--dir", e.logseqDir, "--indent=1", "indented entry")
 	if err != nil {
 		t.Fatalf("unexpected error: %v\nstderr: %s", err, stderr)
 	}
