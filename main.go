@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const semVer = "2.3.0"
+const semVer = "2.4.0"
 
 var (
 	dirFlag    string
